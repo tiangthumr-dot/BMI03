@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="เครื่องมือคำนวณ BMI และประเมินการเจริญเติบโตสำหรับเด็กและผู้ใหญ่">
+<title>BMI & Growth Assessment</title>
+<style>
+:root{
+  --bg:#f7f4ee;--paper:#fffefa;--ink:#342b25;--muted:#81766c;--brown:#795b45;
+  --brown2:#a88970;--line:#e9e1d7;--soft:#f1ebe3;--green:#52745d;--amber:#9a7137;
+  --shadow:0 18px 50px rgba(68,49,32,.08);--radius:22px;
+  --hero-start:#f1e9df;--hero-end:#fbf8f2;--art-line:#d7c6b5;--art-center:#f7f1e8;
+  --status-bg:#f4f0e8;--metric-bg:#faf7f2;--notice-bg:#fbf5e9;--notice-border:#eee0c8;
+  --notice-text:#735c3e;--info-bg:#eee7dd;--info-text:#625448;--input-bg:#fff
+}
+body[data-theme="black"]{
+  --bg:#111114;--paper:#1d1d22;--ink:#f2eee8;--muted:#b3aaa0;--brown:#e7bd70;
+  --brown2:#c39b55;--line:#39363a;--soft:#2c2928;--green:#85b58c;--amber:#e2b365;
+  --shadow:0 18px 50px rgba(0,0,0,.32);--hero-start:#292522;--hero-end:#1a191b;
+  --art-line:#62513b;--art-center:#24201b;--status-bg:#29251f;--metric-bg:#252326;
+  --notice-bg:#2e281e;--notice-border:#59472c;--notice-text:#e0c895;--info-bg:#242123;
+  --info-text:#d1c5b9;--input-bg:#25252a
+}
+body[data-theme="gold"]{
+  --bg:#f8f4e9;--paper:#fffdf6;--ink:#383022;--muted:#82765f;--brown:#8d6a19;
+  --brown2:#b38b32;--line:#e9dfc8;--soft:#f3ecd9;--green:#52745d;--amber:#9a7137;
+  --shadow:0 18px 50px rgba(68,54,24,.1);--hero-start:#f2e8cc;--hero-end:#fffaf0;
+  --art-line:#d8c28e;--art-center:#fbf4df;--status-bg:#f5efdf;--metric-bg:#fcf9f0;
+  --notice-bg:#fbf5e9;--notice-border:#eee0c8;--notice-text:#735c3e;--info-bg:#eee7dd;
+  --info-text:#625448;--input-bg:#fffefa
+}
+body[data-theme="purple"]{
+  --bg:#f3eff9;--paper:#fffaff;--ink:#30243c;--muted:#81738e;--brown:#7041a6;
+  --brown2:#976cc4;--line:#e5dced;--soft:#f0e9f7;--green:#52745d;--amber:#9a7137;
+  --shadow:0 18px 50px rgba(54,34,75,.1);--hero-start:#eee5f7;--hero-end:#faf7fd;
+  --art-line:#cbb6df;--art-center:#f5eefb;--status-bg:#f1eafa;--metric-bg:#faf6fd;
+  --notice-bg:#f6effb;--notice-border:#e6d7f0;--notice-text:#654c78;--info-bg:#eee6f4;
+  --info-text:#5d5069;--input-bg:#fff
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Prompt,"Noto Sans Thai",Tahoma,sans-serif;line-height:1.65}
+button,input,select{font:inherit}
+.wrap{max-width:1120px;margin:auto;padding:28px 22px 60px}
+header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:34px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:700;letter-spacing:.2px}
+.logo{width:44px;height:44px;border-radius:15px;background:var(--brown);color:white;display:grid;place-items:center;font-size:22px}
+.brand small{display:block;color:var(--muted);font-weight:400;font-size:11px;letter-spacing:1.4px}
+.header-note{color:var(--muted);font-size:13px}
+.header-tools{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.header-tools label{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:12px}
+.header-tools select{width:auto;padding:9px 30px 9px 11px;font-size:12px}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;align-items:stretch;margin-bottom:26px}
+.hero-copy,.hero-art{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.hero-copy{padding:34px}
+.eyebrow{color:var(--brown);font-size:12px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase}
+h1{font-size:clamp(28px,4vw,43px);line-height:1.22;margin:12px 0}
+.hero p{color:var(--muted);margin:0;max-width:560px}
+.hero-art{padding:28px;display:flex;align-items:center;justify-content:center;min-height:220px;background:linear-gradient(135deg,var(--hero-start),var(--hero-end))}
+.art-circle{width:165px;height:165px;border-radius:50%;border:1px solid var(--art-line);display:grid;place-items:center;position:relative;color:var(--brown)}
+.art-circle:before,.art-circle:after{content:"";position:absolute;border:1px solid var(--art-line);border-radius:50%;inset:15px}
+.art-circle:after{inset:31px}
+.art-center{text-align:center;z-index:1;background:var(--art-center);border-radius:50%;width:94px;height:94px;display:grid;place-content:center}
+.art-center strong{font-size:29px;line-height:1.2}.art-center span{font-size:10px;color:var(--muted)}
+.layout{display:grid;grid-template-columns: minmax(0,1fr) minmax(300px,.82fr);gap:24px}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:26px;box-shadow:var(--shadow)}
+.panel h2{font-size:20px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 22px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field{display:flex;flex-direction:column;gap:7px}
+.field.full{grid-column:1/-1}
+label{font-size:13px;font-weight:600}
+input,select{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:var(--input-bg);color:var(--ink);outline:none}
+input:focus,select:focus{border-color:var(--brown2);box-shadow:0 0 0 3px #a8897020}
+.hint{font-size:11px;color:var(--muted)}
+.gender{display:flex;gap:9px}
+.gender label{flex:1}
+.gender input{position:absolute;opacity:0;pointer-events:none}
+.gender span{display:block;text-align:center;padding:11px;border:1px solid var(--line);border-radius:12px;background:var(--input-bg);cursor:pointer;font-weight:500}
+.gender input:checked+span{border-color:var(--brown);background:var(--soft);color:var(--brown);font-weight:700}
+.btn{border:0;background:var(--brown);color:#fff;padding:14px 18px;border-radius:13px;font-weight:700;cursor:pointer;transition:.2s}
+.btn:hover{background:#604632;transform:translateY(-1px)}
+.btn.secondary{background:var(--soft);color:var(--brown);border:1px solid var(--line)}
+.actions{display:flex;gap:10px;margin-top:22px}
+.actions .btn{flex:1}
+.result-empty{min-height:390px;display:grid;place-items:center;text-align:center;color:var(--muted)}
+.empty-icon{font-size:45px;margin-bottom:10px}
+.result-content{display:none}
+.result-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.result-top h2{margin:0}
+.pill{font-size:11px;padding:6px 10px;border-radius:30px;background:var(--soft);color:var(--brown);white-space:nowrap}
+.bmi-number{font-size:58px;line-height:1.1;font-weight:700;color:var(--brown);margin:20px 0 4px}
+.bmi-caption{font-size:13px;color:var(--muted)}
+.status{margin-top:16px;padding:14px;border-radius:13px;background:var(--status-bg);border-left:4px solid var(--brown2)}
+.status strong{display:block;margin-bottom:3px}
+.status p{margin:0;color:var(--muted);font-size:13px}
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.metric{background:var(--metric-bg);border:1px solid var(--line);padding:12px;border-radius:12px}
+.metric span{display:block;color:var(--muted);font-size:11px}
+.metric strong{font-size:16px}
+.notice{margin-top:18px;padding:13px 14px;background:var(--notice-bg);border:1px solid var(--notice-border);border-radius:12px;color:var(--notice-text);font-size:12px}
+.section{margin-top:24px}
+.section h3{font-size:16px;margin:0 0 10px}
+.legend{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:13px}
+.legend div{height:8px;border-radius:10px;background:#ddd}
+.legend div:nth-child(1){background:#c4a98e}.legend div:nth-child(2){background:#7d9b82}.legend div:nth-child(3){background:#d1b06c}.legend div:nth-child(4){background:#c58a64}.legend div:nth-child(5){background:#a96f62}
+.scale-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:5px}
+.info{margin-top:24px;background:var(--info-bg);border-radius:16px;padding:18px 20px;color:var(--info-text);font-size:12px}
+.info strong{color:var(--ink)}
+footer{margin-top:24px;text-align:center;color:var(--muted);font-size:11px}
+.hidden{display:none!important}
+@media(max-width:800px){.hero,.layout{grid-template-columns:1fr}.hero-art{min-height:170px}.result-empty{min-height:220px}}
+@media(max-width:520px){.wrap{padding:18px 14px 40px}header{align-items:flex-start;flex-direction:column;margin-bottom:20px}.header-tools{justify-content:flex-start}.header-note{display:none}.hero-copy,.panel{padding:21px}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.actions{flex-direction:column}.bmi-number{font-size:50px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><div class="logo">＋</div><div>BMI & GROWTH<small>HEALTH ASSESSMENT</small></div></div>
+    <div class="header-tools">
+      <div class="header-note">เครื่องมือคัดกรองข้อมูลสุขภาพเบื้องต้น</div>
+      <label for="standardSelect">เกณฑ์ผู้ใหญ่
+        <select id="standardSelect" aria-label="เลือกเกณฑ์ BMI สำหรับผู้ใหญ่">
+          <option value="asia">เอเชีย</option>
+          <option value="who">สากล (WHO)</option>
+        </select>
+      </label>
+      <label for="themeSelect">สี
+        <select id="themeSelect" aria-label="เลือกชุดสี">
+          <option value="black">ดำ</option>
+          <option value="gold" selected>ทอง</option>
+          <option value="purple">ม่วง</option>
+        </select>
+      </label>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-copy">
+      <div class="eyebrow">Wellness • Growth • Balance</div>
+      <h1>เข้าใจสุขภาพ<br>เริ่มต้นจากข้อมูล</h1>
+      <p>คำนวณดัชนีมวลกายและเลือกแนวทางประเมินให้เหมาะสมกับช่วงวัย ทั้งเด็กและผู้ใหญ่</p>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <div class="art-circle"><div class="art-center"><strong>BMI</strong><span>YOUR HEALTH</span></div></div>
+    </div>
+  </section>
+
+  <main class="layout">
+    <section class="panel">
+      <h2>กรอกข้อมูลเพื่อประเมิน</h2>
+      <p class="sub">กรุณากรอกข้อมูลให้ครบถ้วนและใช้ค่าที่วัดได้ล่าสุด</p>
+      <form id="bmiForm">
+        <div class="form-grid">
+          <div class="field full">
+            <label for="birth">วันเกิด (ใช้คำนวณอายุ ณ วันนี้)</label>
+            <input id="birth" type="date" required>
+            <span class="hint">ระบบแบ่งเกณฑ์ตามอายุโดยอัตโนมัติ</span>
+          </div>
+          <div class="field full">
+            <label>เพศสำหรับเลือกกราฟอ้างอิงเด็ก</label>
+            <div class="gender">
+              <label><input type="radio" name="sex" value="male"><span>ชาย</span></label>
+              <label><input type="radio" name="sex" value="female"><span>หญิง</span></label>
+              <label><input type="radio" name="sex" value="unspecified" checked><span>ไม่ระบุ</span></label>
+            </div>
+            <span class="hint">เพศไม่เปลี่ยนเกณฑ์จุดตัด BMI ของผู้ใหญ่ แต่จำเป็นต่อการเลือกกราฟเด็กบางมาตรฐาน</span>
+          </div>
+          <div class="field">
+            <label for="weight">น้ำหนัก (กิโลกรัม)</label>
+            <input id="weight" type="number" min="0.1" max="500" step="0.1" placeholder="เช่น 52.5" required>
+          </div>
+          <div class="field">
+            <label for="height">ส่วนสูง (เซนติเมตร)</label>
+            <input id="height" type="number" min="30" max="250" step="0.1" placeholder="เช่น 160" required>
+          </div>
+          <div class="field full">
+            <label for="measureDate">วันที่วัดข้อมูล</label>
+            <input id="measureDate" type="date" required>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn" type="submit">คำนวณและประเมิน</button>
+          <button class="btn secondary" type="reset">ล้างข้อมูล</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel" aria-live="polite">
+      <div id="empty" class="result-empty">
+        <div><div class="empty-icon">◌</div><strong>ผลการประเมินจะแสดงที่นี่</strong><div class="hint">กรอกข้อมูลทางซ้ายแล้วกดคำนวณ</div></div>
+      </div>
+      <div id="result" class="result-content">
+        <div class="result-top"><div><h2>ผลการประเมิน</h2><div class="bmi-caption" id="ageLabel"></div></div><span class="pill" id="standardPill">มาตรฐาน</span></div>
+        <div class="bmi-number" id="bmiValue">—</div>
+        <div class="bmi-caption">ดัชนีมวลกาย (kg/m²)</div>
+        <div class="status"><strong id="statusTitle">—</strong><p id="statusText">—</p></div>
+        <div class="metric-grid">
+          <div class="metric"><span>น้ำหนัก</span><strong id="weightOut">—</strong></div>
+          <div class="metric"><span>ส่วนสูง</span><strong id="heightOut">—</strong></div>
+          <div class="metric"><span>อายุ</span><strong id="ageOut">—</strong></div>
+          <div class="metric"><span>วันที่ประเมิน</span><strong id="dateOut">—</strong></div>
+        </div>
+        <div id="adultScale" class="section hidden">
+          <h3 id="adultScaleTitle">ช่วงเกณฑ์ BMI ผู้ใหญ่เอเชีย</h3>
+          <div class="legend"><div title="ต่ำกว่า 18.5"></div><div title="18.5–22.9"></div><div title="23–24.9"></div><div title="25–29.9"></div><div title="30 ขึ้นไป"></div></div>
+          <div class="scale-labels"><span>น้อย</span><span>ปกติ</span><span>เกิน</span><span>อ้วน 1</span><span>อ้วน 2</span></div>
+        </div>
+        <div id="childNotice" class="notice hidden"></div>
+        <div class="notice">ผลนี้เป็นข้อมูลคัดกรองเบื้องต้น ไม่ใช่การวินิจฉัยโรค หากกังวลเรื่องการเจริญเติบโตหรือสุขภาพ ควรปรึกษาบุคลากรทางการแพทย์</div>
+      </div>
+    </section>
+  </main>
+
+  <section class="info">
+    <strong>เกี่ยวกับเกณฑ์การประเมิน</strong><br>
+    เลือกเกณฑ์ BMI ผู้ใหญ่เอเชียหรือเกณฑ์สากล WHO ได้จากด้านบน ส่วนเด็กต้องประเมิน BMI-for-age โดยเทียบข้อมูลอ้างอิงตามอายุและเพศ เว็บไซต์ต้นแบบนี้ยังไม่ได้บรรจุตารางคำนวณ Percentile/Z-score จากกรมอนามัยไทยหรือ WHO จึงจะไม่แสดงการจัดกลุ่มเด็กโดยคาดเดา
+  </section>
+  <footer>ข้อมูลที่กรอกจะประมวลผลในเบราว์เซอร์นี้เท่านั้น และไม่มีการส่งไปยังเซิร์ฟเวอร์</footer>
+</div>
+<script>
+const $ = id => document.getElementById(id);
+const today = new Date();
+const isoToday = new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);
+$('measureDate').value = isoToday;
+$('birth').max = isoToday;
+$('measureDate').max = isoToday;
+
+function ageParts(birthStr, atStr){
+  const b = new Date(birthStr+'T00:00:00');
+  const a = new Date(atStr+'T00:00:00');
+  if (b > a) throw new Error('วันเกิดต้องไม่อยู่หลังวันที่ประเมิน');
+  let years = a.getFullYear()-b.getFullYear();
+  let months = a.getMonth()-b.getMonth();
+  let days = a.getDate()-b.getDate();
+  if(days<0){ months--; const prevMonth=new Date(a.getFullYear(),a.getMonth(),0); days+=prevMonth.getDate(); }
+  if(months<0){ years--; months+=12; }
+  return {years,months,days,totalMonths:years*12+months,daysTotal:Math.floor((a-b)/86400000)};
+}
+function classifyAdult(bmi,standard){
+  if(standard==='who'){
+    if(bmi<18.5) return ['น้ำหนักน้อยกว่าเกณฑ์','ค่า BMI ต่ำกว่า 18.5 ตามเกณฑ์ผู้ใหญ่สากล WHO'];
+    if(bmi<25) return ['อยู่ในเกณฑ์ปกติ','ค่า BMI อยู่ในช่วง 18.5–24.9 ตามเกณฑ์ผู้ใหญ่สากล WHO'];
+    if(bmi<30) return ['น้ำหนักเกิน','ค่า BMI อยู่ในช่วง 25.0–29.9 ตามเกณฑ์ผู้ใหญ่สากล WHO'];
+    return ['โรคอ้วน','ค่า BMI ตั้งแต่ 30 ขึ้นไปตามเกณฑ์ผู้ใหญ่สากล WHO'];
+  }
+  if(bmi<18.5) return ['น้ำหนักน้อยกว่าเกณฑ์','ค่า BMI ต่ำกว่า 18.5 ควรพิจารณาร่วมกับสุขภาพและประวัติการเจริญเติบโต'];
+  if(bmi<23) return ['อยู่ในเกณฑ์ปกติ','ค่า BMI อยู่ในช่วง 18.5–22.9 ตามเกณฑ์ผู้ใหญ่เอเชีย'];
+  if(bmi<25) return ['น้ำหนักเกิน','ค่า BMI อยู่ในช่วง 23.0–24.9'];
+  if(bmi<30) return ['อ้วนระดับ 1','ค่า BMI อยู่ในช่วง 25.0–29.9'];
+  return ['อ้วนระดับ 2','ค่า BMI ตั้งแต่ 30 ขึ้นไป'];
+}
+function updateAdultScale(standard){
+  const who=standard==='who';
+  $('adultScaleTitle').textContent=who?'ช่วงเกณฑ์ BMI ผู้ใหญ่สากล WHO':'ช่วงเกณฑ์ BMI ผู้ใหญ่เอเชีย';
+  const legend=$('adultScale').querySelector('.legend');
+  const labels=who?['ต่ำกว่า 18.5','18.5–24.9','25.0–29.9','ตั้งแต่ 30']:['ต่ำกว่า 18.5','18.5–22.9','23.0–24.9','25.0–29.9','ตั้งแต่ 30'];
+  legend.style.gridTemplateColumns=`repeat(${labels.length},1fr)`;
+  legend.innerHTML=labels.map(label=>`<div title="${label}"></div>`).join('');
+  const colors=who?['#c4a98e','#7d9b82','#c58a64','#a96f62']:['#c4a98e','#7d9b82','#d1b06c','#c58a64','#a96f62'];
+  [...legend.children].forEach((item,index)=>{item.style.background=colors[index];});
+  $('adultScale').querySelector('.scale-labels').style.display=who?'grid':'flex';
+  $('adultScale').querySelector('.scale-labels').style.gridTemplateColumns=who?'repeat(4,1fr)':'';
+  $('adultScale').querySelector('.scale-labels').innerHTML=who
+    ?'<span>น้อย</span><span>ปกติ</span><span>เกิน</span><span>อ้วน</span>'
+    :'<span>น้อย</span><span>ปกติ</span><span>เกิน</span><span>อ้วน 1</span><span>อ้วน 2</span>';
+}
+document.body.dataset.theme=$('themeSelect').value;
+$('themeSelect').addEventListener('change',()=>{document.body.dataset.theme=$('themeSelect').value;});
+$('standardSelect').addEventListener('change',()=>{
+  if($('result').style.display==='block') $('bmiForm').dispatchEvent(new Event('submit',{cancelable:true}));
+});
+function formatDate(s){return new Date(s+'T00:00:00').toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'});}
+$('bmiForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  try{
+    const birth=$('birth').value, date=$('measureDate').value;
+    const weight=Number($('weight').value), height=Number($('height').value);
+    if(!birth||!date) throw new Error('กรุณาระบุวันเกิดและวันที่วัดข้อมูล');
+    if(date>isoToday) throw new Error('วันที่วัดข้อมูลต้องไม่อยู่ในอนาคต');
+    if(!Number.isFinite(weight)||weight<=0||weight>500) throw new Error('กรุณากรอกน้ำหนักให้ถูกต้อง');
+    if(!Number.isFinite(height)||height<30||height>250) throw new Error('กรุณากรอกส่วนสูงให้ถูกต้อง');
+    const age=ageParts(birth,date);
+    const bmi=weight/Math.pow(height/100,2);
+    const sex=document.querySelector('input[name="sex"]:checked').value;
+    const standard=$('standardSelect').value;
+    $('empty').classList.add('hidden');$('result').style.display='block';
+    $('bmiValue').textContent=bmi.toFixed(2);
+    $('weightOut').textContent=weight.toFixed(1)+' kg';
+    $('heightOut').textContent=height.toFixed(1)+' cm';
+    $('ageOut').textContent=age.years+' ปี '+age.months+' เดือน';
+    $('ageLabel').textContent='อายุ ณ วันที่ประเมิน';
+    $('dateOut').textContent=formatDate(date);
+    const adult=age.years>=20;
+    $('adultScale').classList.toggle('hidden',!adult);
+    $('childNotice').classList.toggle('hidden',adult);
+    updateAdultScale(standard);
+    if(adult){
+      const [title,desc]=classifyAdult(bmi,standard);
+      $('statusTitle').textContent=title;
+      $('statusText').textContent=desc;
+      $('standardPill').textContent=standard==='who'?'WHO (สากล)':'ผู้ใหญ่เอเชีย';
+    }else if(age.totalMonths<24){
+      $('statusTitle').textContent='ต้องประเมินด้วยเกณฑ์ทารก';
+      $('statusText').textContent='ไม่ควรใช้ BMI ผู้ใหญ่กับทารก ควรประเมินน้ำหนักเทียบความยาวตัวและตัวชี้วัดการเจริญเติบโตตาม WHO';
+      $('standardPill').textContent='WHO 0–ต่ำกว่า 2 ปี';
+      $('childNotice').textContent='ระบบคำนวณ BMI พื้นฐานให้แล้ว แต่ยังไม่จัดกลุ่มภาวะโภชนาการ เนื่องจากช่วงวัยนี้ควรใช้ตัวชี้วัดการเจริญเติบโตเฉพาะทารก';
+    }else if(age.years<5){
+      $('statusTitle').textContent='ต้องเทียบกราฟ BMI-for-age';
+      $('statusText').textContent='เด็กอายุ 2–ต่ำกว่า 5 ปีควรประเมินด้วย WHO Child Growth Standards ไม่ใช้จุดตัด BMI ผู้ใหญ่';
+      $('standardPill').textContent='WHO 2–ต่ำกว่า 5 ปี';
+      $('childNotice').textContent='ยังไม่มีชุดข้อมูล WHO LMS/ตารางอ้างอิงในต้นแบบนี้ จึงยังไม่แสดง Percentile หรือ Z-score เพื่อป้องกันการแปลผลคลาดเคลื่อน';
+    }else if(age.years<20){
+      $('statusTitle').textContent='ต้องเทียบเกณฑ์ BMI-for-age';
+      $('statusText').textContent='เด็กและวัยรุ่นต้องแปลผลโดยเทียบ BMI กับอายุและเพศตามกราฟอ้างอิง ไม่ใช้เกณฑ์ผู้ใหญ่';
+      $('standardPill').textContent='เด็กไทย 5–19 ปี';
+      $('childNotice').textContent='ต้องติดตั้งตารางอ้างอิงกรมอนามัยไทย พ.ศ. 2564 ที่ผ่านการตรวจสอบก่อน จึงจะแสดง Percentile/Z-score และผลจัดกลุ่มได้ '+(sex==='unspecified'?'กรุณาระบุเพศตามกราฟอ้างอิงเพื่อประเมินขั้นต่อไป':'');
+    }else{
+      $('statusTitle').textContent='อายุอยู่นอกช่วงเกณฑ์ที่กำหนด';
+      $('statusText').textContent='กรุณาตรวจสอบอายุและวันที่ประเมิน';
+      $('standardPill').textContent='ต้องตรวจสอบข้อมูล';
+    }
+  }catch(err){alert(err.message);}
+});
+$('bmiForm').addEventListener('reset',()=>{
+  setTimeout(()=>{
+    $('result').style.display='none';$('empty').classList.remove('hidden');
+    $('measureDate').value=isoToday;
+  },0);
+});
+</script>
+</body>
+</html>
